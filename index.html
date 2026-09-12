@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GCPRL — Prueba de Nivel Inicial</title>
+<style>
+  :root {
+    --steel: #23272e;
+    --steel-2: #2e333b;
+    --paper: #fbfbfc;
+    --card: #ffffff;
+    --line: #e3e5e8;
+    --muted: #6b7280;
+    --orange: #e8590c;
+    --blue: #1d5c8a;
+    --green: #2c6e49;
+    --blue-tint: #eaf2f7;
+    --orange-tint: #fdf0e7;
+    --green-tint: #eaf3ee;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--steel);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; margin: 0; }
+
+  .app { max-width: 720px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+
+  header.top {
+    background: var(--steel);
+    color: #fff;
+    padding: 28px 24px 22px;
+  }
+  header.top h1 { font-size: 1.5rem; font-weight: 700; }
+  header.top p.sub { margin: 6px 0 0; color: #aeb4bc; font-size: 0.95rem; }
+
+  .progress-wrap {
+    margin-top: 18px;
+  }
+  .progress-track {
+    height: 6px;
+    background: #3a4048;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--orange);
+    width: 0%;
+    transition: width .3s ease;
+  }
+  .progress-label {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: #aeb4bc;
+  }
+
+  main { flex: 1; padding: 28px 24px 40px; }
+
+  /* Intro screen */
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 28px;
+  }
+  .intro-card h2 { font-size: 1.3rem; margin-bottom: 14px; }
+  .intro-card p { color: var(--steel); font-size: 0.98rem; margin: 0 0 14px; }
+  .intro-card ul { margin: 0 0 20px; padding-left: 20px; color: var(--muted); font-size: 0.94rem; }
+  .intro-card li { margin-bottom: 6px; }
+
+  .name-field { margin-bottom: 20px; }
+  .name-field label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: var(--steel); }
+  .name-field input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+  .name-field input:focus { outline: 2px solid var(--orange); outline-offset: 1px; }
+
+  button.primary {
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    padding: 13px 26px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button.primary:hover { background: #d14f09; }
+  button.primary:disabled { background: #d8dadd; cursor: not-allowed; }
+
+  button.secondary {
+    background: transparent;
+    color: var(--steel);
+    border: 1px solid var(--line);
+    padding: 12px 22px;
+    font-size: 0.96rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button.secondary:hover { background: #f2f2f3; }
+  button.secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Question screen */
+  .chip {
+    display: inline-block;
+    padding: 5px 13px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .chip.Calidad { background: var(--blue-tint); color: var(--blue); }
+  .chip.PRL { background: var(--orange-tint); color: var(--orange); }
+  .chip.MedioAmbiente { background: var(--green-tint); color: var(--green); }
+
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 26px;
+  }
+  .q-text { font-size: 1.18rem; font-weight: 600; margin-bottom: 20px; color: var(--steel); }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 13px 15px;
+    cursor: pointer;
+    background: var(--card);
+    transition: border-color .15s, background .15s;
+  }
+  .option:hover { border-color: #c7cbd1; }
+  .option .dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid #c7cbd1;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .option.selected { border-color: var(--orange); background: var(--orange-tint); }
+  .option.selected .dot { border-color: var(--orange); }
+  .option.selected .dot::after {
+    content: "";
+    position: absolute; inset: 3px;
+    border-radius: 50%;
+    background: var(--orange);
+  }
+  .option .text { font-size: 0.98rem; color: var(--steel); }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 22px;
+  }
+
+  /* Results screen */
+  .score-hero {
+    background: var(--steel);
+    color: #fff;
+    border-radius: 10px;
+    padding: 32px 28px;
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  .score-hero .num { font-family: Georgia, serif; font-size: 3.2rem; font-weight: 700; color: var(--orange); }
+  .score-hero .label { color: #aeb4bc; font-size: 0.95rem; margin-top: 4px; }
+  .score-hero .note { color: #aeb4bc; font-size: 0.85rem; margin-top: 14px; }
+
+  .block-breakdown { display: flex; flex-direction: column; gap: 12px; margin-bottom: 26px; }
+  .block-row {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .block-row .head { display: flex; justify-content: space-between; font-size: 0.92rem; font-weight: 600; margin-bottom: 8px; }
+  .bar-track { height: 8px; background: #eceef0; border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+
+  .review-toggle { text-align: center; margin-bottom: 18px; }
+
+  .send-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .review-item {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .review-item .q-num { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+  .review-item .q-body { font-weight: 600; margin-bottom: 10px; font-size: 0.98rem; }
+  .review-answer { font-size: 0.92rem; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; }
+  .review-answer.correct { background: var(--green-tint); color: var(--green); }
+  .review-answer.incorrect { background: #fbeae7; color: #b3401a; }
+  .review-answer.your-correct { background: var(--green-tint); color: var(--green); font-weight: 600; }
+
+  #results { display: none; }
+  #intro { display: block; }
+  #quiz { display: none; }
+
+  @media (max-width: 480px) {
+    header.top { padding: 22px 18px 18px; }
+    main { padding: 20px 16px 32px; }
+    .q-card, .intro-card { padding: 20px; }
+    .score-hero .num { font-size: 2.6rem; }
+    .send-row { flex-direction: column; }
+    .send-row button { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>GCPRL — Prueba de Nivel Inicial</h1>
+    <p class="sub">UT0 · Introducción — Cuestionario diagnóstico, no calificable</p>
+    <div class="progress-wrap" id="progressWrap" style="display:none;">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">Pregunta 1 de 25</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- INTRO -->
+    <section id="intro">
+      <div class="intro-card">
+        <h2>Antes de empezar</h2>
+        <p>Este cuestionario no se califica. Su único objetivo es saber de dónde partimos como grupo antes de comenzar el módulo de Calidad, PRL y Protección Ambiental.</p>
+        <ul>
+          <li>25 preguntas, repartidas en tres bloques: Calidad, PRL y Medio Ambiente.</li>
+          <li>Si no sabes una respuesta, marca la que te parezca más razonable — no pasa nada por fallar.</li>
+          <li>Al final verás tu resultado y podrás repasar las respuestas correctas.</li>
+        </ul>
+        <div class="name-field">
+          <label for="apellido1Input">Primer apellido</label>
+          <input type="text" id="apellido1Input" placeholder="Primer apellido">
+        </div>
+        <div class="name-field">
+          <label for="apellido2Input">Segundo apellido</label>
+          <input type="text" id="apellido2Input" placeholder="Segundo apellido">
+        </div>
+        <div class="name-field">
+          <label for="nombreInput">Nombre</label>
+          <input type="text" id="nombreInput" placeholder="Nombre">
+        </div>
+        <div id="nameError" style="display:none; color:#b3401a; font-size:0.88rem; margin:-8px 0 16px;">Completa los tres campos (primer apellido, segundo apellido y nombre) antes de empezar.</div>
+        <button class="primary" onclick="startQuiz()">Empezar</button>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="quiz">
+      <div class="q-card">
+        <div id="blockChip" class="chip"></div>
+        <div class="q-text" id="qText"></div>
+        <div class="options" id="optionsWrap"></div>
+        <div class="nav-row">
+          <button class="secondary" id="prevBtn" onclick="prevQuestion()">Anterior</button>
+          <button class="primary" id="nextBtn" onclick="nextQuestion()" disabled>Siguiente</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results">
+      <div class="score-hero">
+        <div class="num" id="scoreNum">0/25</div>
+        <div class="label" id="scoreLabel">aciertos</div>
+        <div class="note" id="scoreNote">Recuerda: esto no cuenta para nota, solo nos sirve para arrancar el módulo sabiendo dónde estamos.</div>
+      </div>
+      <div class="block-breakdown" id="blockBreakdown"></div>
+      <div class="send-row">
+        <button class="primary" onclick="copyResults()">Copiar resultado</button>
+      </div>
+      <div id="sendNote" style="display:none; font-size:0.85rem; color:var(--muted); text-align:center; margin-bottom:18px;"></div>
+      <div class="review-toggle">
+        <button class="secondary" onclick="toggleReview()" id="reviewBtn">Ver repaso de respuestas</button>
+      </div>
+      <div id="reviewList"></div>
+    </section>
+  </main>
+</div>
+
+<iframe name="hidden_iframe" id="hiddenFrame" style="display:none;"></iframe>
+<form id="formspreeForm" method="POST" target="hidden_iframe" style="display:none;">
+  <input type="hidden" name="_subject">
+  <input type="hidden" name="Alumno">
+  <input type="hidden" name="Fecha">
+  <input type="hidden" name="Puntuacion_total">
+  <input type="hidden" name="Calidad">
+  <input type="hidden" name="PRL">
+  <input type="hidden" name="Medio_Ambiente">
+  <input type="hidden" name="Repaso_de_respuestas">
+</form>
+
+<script>
+const ORIGINAL_QUESTIONS = [
+  {block:"Calidad", q:"¿Qué significa ISO en el contexto de las normas de calidad?", opts:["International Standard Organization","International Organization for Standardization","Internal Sistema de Ordenación","Institución de Servicios Organizados"], correct:1},
+  {block:"Calidad", q:"¿Qué es una auditoría de calidad?", opts:["Una revisión sistemática para comprobar si un sistema cumple los requisitos establecidos","Un informe de ventas anual","Una inspección de las instalaciones eléctricas","Un tipo de certificado de garantía del producto"], correct:0},
+  {block:"Calidad", q:"La norma ISO 9001 está relacionada principalmente con:", opts:["Gestión ambiental","Gestión de la calidad","Seguridad de la información","Prevención de riesgos laborales"], correct:1},
+  {block:"Calidad", q:"¿Qué significa EFQM?", opts:["European Foundation for Quality Management","European Federation of Quality Manufacturing","Empresa Federal de Calidad y Medioambiente","European Fund for Quality Metrics"], correct:0},
+  {block:"Calidad", q:"La “mejora continua” en un sistema de calidad hace referencia a:", opts:["Cambiar de proveedor cada año","Un proceso constante de identificar y aplicar mejoras en productos y procesos","Aumentar el precio de los productos","Reducir personal para bajar costes"], correct:1},
+  {block:"Calidad", q:"¿Cuál de estas NO es una herramienta de gestión de la calidad?", opts:["5S","Gestión por procesos","Plan de emergencia","Gestión de competencias"], correct:2},
+  {block:"Calidad", q:"Un “indicador de calidad” sirve para:", opts:["Decorar los informes de la empresa","Medir el grado de cumplimiento de un objetivo o proceso","Sustituir a las auditorías","Fijar el precio de un producto"], correct:1},
+  {block:"Calidad", q:"La certificación de un sistema de calidad la otorga:", opts:["Cualquier empleado de la empresa","Un organismo o entidad certificadora externa acreditada","El propio cliente","El sindicato de la empresa"], correct:1},
+  {block:"Calidad", q:"¿Qué es un “manual de calidad”?", opts:["Un documento que describe el sistema de gestión de la calidad de una empresa","El manual de instrucciones de una máquina","Un catálogo de productos","Un documento exclusivo del área comercial"], correct:0},
+  {block:"PRL", q:"¿Qué significa la sigla EPI?", opts:["Equipo de Protección Individual","Estudio de Prevención Industrial","Evaluación de Peligros e Incidentes","Emergencia y Primeros Auxilios"], correct:0},
+  {block:"PRL", q:"¿Cuál de los siguientes es un EPI típico en soldadura?", opts:["Chaleco reflectante de oficina","Pantalla facial de soldadura","Guantes de látex desechables","Auriculares inalámbricos"], correct:1},
+  {block:"PRL", q:"Un “plan de emergencia” en una empresa sirve para:", opts:["Planificar las vacaciones del personal","Organizar la respuesta ante situaciones de riesgo grave (incendio, evacuación, etc.)","Programar el mantenimiento de máquinas","Gestionar los turnos de trabajo"], correct:1},
+  {block:"PRL", q:"¿Qué es un “riesgo laboral”?", opts:["Una sanción económica a la empresa","La posibilidad de que un trabajador sufra un daño derivado de su trabajo","Un tipo de contrato temporal","Un beneficio social para el trabajador"], correct:1},
+  {block:"PRL", q:"La Ley de Prevención de Riesgos Laborales en España es la:", opts:["Ley 31/1995","Ley 21/2013","Ley 9/2017","Ley 39/2015"], correct:0},
+  {block:"PRL", q:"¿Cuál de estas acciones corresponde a la promoción de la cultura preventiva en una empresa?", opts:["Ocultar los accidentes de trabajo","Formar e informar regularmente a los trabajadores sobre riesgos y su prevención","Reducir el número de EPIs disponibles","Evitar hablar de seguridad en las reuniones"], correct:1},
+  {block:"PRL", q:"El mantenimiento y la reposición de los EPIs es responsabilidad de:", opts:["Únicamente del trabajador, sin ninguna orientación","La empresa, siguiendo las indicaciones del fabricante y la normativa","Nadie, los EPIs no requieren mantenimiento","El cliente final"], correct:1},
+  {block:"PRL", q:"¿Qué se entiende por “evaluación de riesgos” en un puesto de trabajo?", opts:["Un examen médico anual","El proceso de identificar los peligros y valorar los riesgos de un puesto o actividad","Un informe de productividad","Una encuesta de satisfacción laboral"], correct:1},
+  {block:"MedioAmbiente", q:"¿Qué es un “residuo industrial”?", opts:["Cualquier producto terminado listo para la venta","Cualquier sustancia u objeto resultante de un proceso productivo que su poseedor desecha","Un producto defectuoso que se puede reparar","Una materia prima sin utilizar"], correct:1},
+  {block:"MedioAmbiente", q:"¿Cuál es el orden de preferencia habitual en la gestión ambiental?", opts:["Reciclar > Reducir > Reutilizar","Reducir > Reutilizar > Reciclar","Reutilizar > Reciclar > Reducir","Eliminar > Reducir > Reciclar"], correct:1},
+  {block:"MedioAmbiente", q:"En un taller de construcciones metálicas, ¿cuál de estos sería un residuo peligroso?", opts:["Chatarra de acero limpia","Aceites de corte usados","Cartón de embalaje","Virutas de aluminio limpias"], correct:1},
+  {block:"MedioAmbiente", q:"¿Qué es un “foco contaminante”?", opts:["Un punto de una instalación desde el que se generan agentes contaminantes","Una luz de emergencia","Un tipo de certificado ambiental","Un sistema de refrigeración"], correct:0},
+  {block:"MedioAmbiente", q:"La gestión de residuos industriales requiere, entre otras cosas:", opts:["Ignorar la trazabilidad de los residuos","Documentación específica de recogida, transporte y tratamiento","Verterlos directamente sin control","Ninguna normativa aplicable"], correct:1},
+  {block:"MedioAmbiente", q:"¿Cuál de estas es una técnica de minimización de residuos?", opts:["Aumentar el volumen de producción sin control","Optimización del proceso productivo para generar menos residuo","Aumentar el número de vertidos","Eliminar los controles de calidad"], correct:1},
+  {block:"MedioAmbiente", q:"Un “aspecto medioambiental” de una actividad industrial es:", opts:["Cualquier elemento de la actividad que puede interactuar con el medio ambiente","El nombre comercial de la empresa","El horario de apertura del taller","El número de empleados"], correct:0},
+  {block:"MedioAmbiente", q:"¿Qué papel juega la “protección ambiental” en la política de una empresa industrial?", opts:["Es opcional y no afecta a la actividad","Es un compromiso ético y normativo que debe integrarse en la gestión de la empresa","Solo importa a las grandes multinacionales","Es responsabilidad exclusiva del ayuntamiento"], correct:1}
+];
+
+const BLOCK_LABEL = {Calidad:"Calidad", PRL:"PRL", MedioAmbiente:"Medio Ambiente"};
+const BLOCK_COLOR = {Calidad:"#1d5c8a", PRL:"#e8590c", MedioAmbiente:"#2c6e49"};
+const BLOCK_ORDER = ["Calidad", "PRL", "MedioAmbiente"];
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/myeyjwnz";
+
+let current = 0;
+let QUESTIONS = [];
+let answers = [];
+let studentFullName = "";
+let lastCorrectCount = 0;
+let lastBlockStats = null;
+
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildShuffledQuestions() {
+  let result = [];
+  BLOCK_ORDER.forEach((b) => {
+    const group = shuffleArray(ORIGINAL_QUESTIONS.filter((q) => q.block === b));
+    group.forEach((q) => {
+      const idx = shuffleArray(q.opts.map((_, i) => i));
+      const newOpts = idx.map((i) => q.opts[i]);
+      const newCorrect = idx.indexOf(q.correct);
+      result.push({ block: q.block, q: q.q, opts: newOpts, correct: newCorrect });
+    });
+  });
+  return result;
+}
+
+function startQuiz() {
+  const a1 = document.getElementById("apellido1Input").value.trim();
+  const a2 = document.getElementById("apellido2Input").value.trim();
+  const nom = document.getElementById("nombreInput").value.trim();
+  if (!a1 || !a2 || !nom) {
+    document.getElementById("nameError").style.display = "block";
+    return;
+  }
+  document.getElementById("nameError").style.display = "none";
+  studentFullName = a1 + " " + a2 + ", " + nom;
+
+  QUESTIONS = buildShuffledQuestions();
+  current = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("quiz").style.display = "block";
+  document.getElementById("progressWrap").style.display = "block";
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = QUESTIONS[current];
+  document.getElementById("blockChip").textContent = BLOCK_LABEL[item.block];
+  document.getElementById("blockChip").className = "chip " + item.block;
+  document.getElementById("qText").textContent = (current + 1) + ". " + item.q;
+
+  const wrap = document.getElementById("optionsWrap");
+  wrap.innerHTML = "";
+  item.opts.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "option" + (answers[current] === i ? " selected" : "");
+    div.onclick = () => selectOption(i);
+    div.innerHTML = '<span class="dot"></span><span class="text">' + opt + '</span>';
+    wrap.appendChild(div);
+  });
+
+  document.getElementById("prevBtn").disabled = current === 0;
+  document.getElementById("nextBtn").disabled = answers[current] === null;
+  document.getElementById("nextBtn").textContent = current === QUESTIONS.length - 1 ? "Finalizar" : "Siguiente";
+
+  const pct = ((current) / QUESTIONS.length) * 100;
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressLabel").textContent = "Pregunta " + (current + 1) + " de " + QUESTIONS.length;
+}
+
+function selectOption(i) {
+  answers[current] = i;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (current < QUESTIONS.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function prevQuestion() {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("progressWrap").style.display = "none";
+  document.getElementById("results").style.display = "block";
+
+  let correctCount = 0;
+  const blockStats = { Calidad: {correct:0, total:0}, PRL: {correct:0, total:0}, MedioAmbiente: {correct:0, total:0} };
+
+  QUESTIONS.forEach((item, i) => {
+    blockStats[item.block].total++;
+    if (answers[i] === item.correct) {
+      correctCount++;
+      blockStats[item.block].correct++;
+    }
+  });
+
+  const name = studentFullName;
+  document.getElementById("scoreNum").textContent = correctCount + "/" + QUESTIONS.length;
+  document.getElementById("scoreLabel").textContent = name + " · aciertos (" + Math.round(correctCount / QUESTIONS.length * 100) + "%)";
+
+  lastCorrectCount = correctCount;
+  lastBlockStats = blockStats;
+  document.getElementById("sendNote").style.display = "none";
+  sendResultsAutomatically();
+
+  const breakdownWrap = document.getElementById("blockBreakdown");
+  breakdownWrap.innerHTML = "";
+  Object.keys(blockStats).forEach((b) => {
+    const stat = blockStats[b];
+    const pct = Math.round(stat.correct / stat.total * 100);
+    const row = document.createElement("div");
+    row.className = "block-row";
+    row.innerHTML =
+      '<div class="head"><span>' + BLOCK_LABEL[b] + '</span><span>' + stat.correct + '/' + stat.total + '</span></div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + BLOCK_COLOR[b] + ';"></div></div>';
+    breakdownWrap.appendChild(row);
+  });
+
+  const reviewList = document.getElementById("reviewList");
+  reviewList.innerHTML = "";
+  reviewList.style.display = "none";
+  QUESTIONS.forEach((item, i) => {
+    const userAnswer = answers[i];
+    const isCorrect = userAnswer === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    let html = '<div class="q-num">Pregunta ' + (i + 1) + ' · ' + BLOCK_LABEL[item.block] + '</div>';
+    html += '<div class="q-body">' + item.q + '</div>';
+    if (userAnswer !== null) {
+      html += '<div class="review-answer ' + (isCorrect ? "correct" : "incorrect") + '">Tu respuesta: ' + item.opts[userAnswer] + (isCorrect ? " ✓" : " ✗") + '</div>';
+    } else {
+      html += '<div class="review-answer incorrect">No respondiste esta pregunta</div>';
+    }
+    if (!isCorrect) {
+      html += '<div class="review-answer your-correct">Respuesta correcta: ' + item.opts[item.correct] + '</div>';
+    }
+    div.innerHTML = html;
+    reviewList.appendChild(div);
+  });
+}
+
+function buildResultText() {
+  const pct = Math.round(lastCorrectCount / QUESTIONS.length * 100);
+  const lines = [];
+  lines.push("GCPRL — Prueba de Nivel Inicial");
+  lines.push("Alumno/a: " + studentFullName);
+  lines.push("Fecha: " + new Date().toLocaleString("es-ES"));
+  lines.push("Resultado total: " + lastCorrectCount + "/" + QUESTIONS.length + " (" + pct + "%)");
+  lines.push("");
+  lines.push("Desglose por bloque:");
+  BLOCK_ORDER.forEach((b) => {
+    const s = lastBlockStats[b];
+    lines.push("- " + BLOCK_LABEL[b] + ": " + s.correct + "/" + s.total);
+  });
+  return lines.join("\n");
+}
+
+function buildReviewText() {
+  const lines = [];
+  lines.push("");
+  lines.push("Repaso de respuestas:");
+  QUESTIONS.forEach((item, i) => {
+    const userAnswer = answers[i];
+    const isCorrect = userAnswer === item.correct;
+    lines.push("");
+    lines.push((i + 1) + ". [" + BLOCK_LABEL[item.block] + "] " + item.q);
+    if (userAnswer !== null) {
+      lines.push("   Tu respuesta: " + item.opts[userAnswer] + (isCorrect ? " (correcta)" : " (incorrecta)"));
+    } else {
+      lines.push("   Tu respuesta: (no respondida)");
+    }
+    if (!isCorrect) {
+      lines.push("   Respuesta correcta: " + item.opts[item.correct]);
+    }
+  });
+  return lines.join("\n");
+}
+
+function sendResultsAutomatically() {
+  const pct = Math.round(lastCorrectCount / QUESTIONS.length * 100);
+  const form = document.getElementById("formspreeForm");
+  form.action = FORMSPREE_ENDPOINT;
+  form.elements["_subject"].value = "GCPRL - Resultado - " + studentFullName;
+  form.elements["Alumno"].value = studentFullName;
+  form.elements["Fecha"].value = new Date().toLocaleString("es-ES");
+  form.elements["Puntuacion_total"].value = lastCorrectCount + "/" + QUESTIONS.length + " (" + pct + "%)";
+  form.elements["Calidad"].value = lastBlockStats.Calidad.correct + "/" + lastBlockStats.Calidad.total;
+  form.elements["PRL"].value = lastBlockStats.PRL.correct + "/" + lastBlockStats.PRL.total;
+  form.elements["Medio_Ambiente"].value = lastBlockStats.MedioAmbiente.correct + "/" + lastBlockStats.MedioAmbiente.total;
+  form.elements["Repaso_de_respuestas"].value = buildReviewText();
+  form.submit();
+
+  const note = document.getElementById("sendNote");
+  note.style.display = "block";
+  note.textContent = "Resultado enviado automáticamente al profesor/a. Si por algún motivo no le llegara, usa el botón \"Copiar resultado\" como respaldo.";
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function buildResultHTML() {
+  const pct = Math.round(lastCorrectCount / QUESTIONS.length * 100);
+  let html = '<div style="font-family:Arial,sans-serif; font-size:14px; color:#23272e;">';
+  html += '<p style="font-size:16px;"><strong>GCPRL — Prueba de Nivel Inicial</strong></p>';
+  html += '<p>Alumno/a: <strong>' + escapeHtml(studentFullName) + '</strong><br>';
+  html += 'Fecha: ' + new Date().toLocaleString("es-ES") + '<br>';
+  html += 'Resultado total: <strong>' + lastCorrectCount + '/' + QUESTIONS.length + ' (' + pct + '%)</strong></p>';
+  html += '<p><strong>Desglose por bloque:</strong><br>';
+  BLOCK_ORDER.forEach((b) => {
+    const s = lastBlockStats[b];
+    html += escapeHtml(BLOCK_LABEL[b]) + ': ' + s.correct + '/' + s.total + '<br>';
+  });
+  html += '</p><hr><p style="font-size:15px;"><strong>Repaso de respuestas:</strong></p>';
+  QUESTIONS.forEach((item, i) => {
+    const userAnswer = answers[i];
+    const isCorrect = userAnswer === item.correct;
+    html += '<p style="margin:12px 0;">';
+    html += '<strong>' + (i + 1) + '. [' + escapeHtml(BLOCK_LABEL[item.block]) + '] ' + escapeHtml(item.q) + '</strong><br>';
+    if (userAnswer !== null) {
+      const color = isCorrect ? "#2c6e49" : "#b3401a";
+      html += 'Tu respuesta: <span style="color:' + color + '; font-weight:bold;">' + escapeHtml(item.opts[userAnswer]) + (isCorrect ? " ✓" : " ✗") + '</span><br>';
+    } else {
+      html += '<span style="color:#b3401a;">Tu respuesta: (no respondida)</span><br>';
+    }
+    if (!isCorrect) {
+      html += 'Respuesta correcta: <span style="color:#2c6e49; font-weight:bold;">' + escapeHtml(item.opts[item.correct]) + '</span>';
+    }
+    html += '</p>';
+  });
+  html += '</div>';
+  return html;
+}
+
+async function copyResults() {
+  const plainText = buildResultText() + "\n" + buildReviewText();
+  const note = document.getElementById("sendNote");
+  try {
+    if (!window.ClipboardItem) throw new Error("no-rich-support");
+    const htmlText = buildResultHTML();
+    const item = new ClipboardItem({
+      "text/plain": new Blob([plainText], { type: "text/plain" }),
+      "text/html": new Blob([htmlText], { type: "text/html" })
+    });
+    await navigator.clipboard.write([item]);
+    note.style.display = "block";
+    note.textContent = "Resultado copiado con color (correctas en verde, incorrectas en rojo). Pégalo en Word, Gmail, Teams o Google Docs para verlo con formato.";
+  } catch (err) {
+    try {
+      await navigator.clipboard.writeText(plainText);
+      note.style.display = "block";
+      note.textContent = "Resultado copiado en texto plano (tu navegador no admite copiar con color). Pégalo donde te indique el profesor/a.";
+    } catch (err2) {
+      note.style.display = "block";
+      note.textContent = "No se pudo copiar automáticamente. Selecciona y copia manualmente desde la pantalla.";
+    }
+  }
+}
+
+function toggleReview() {
+  const list = document.getElementById("reviewList");
+  const btn = document.getElementById("reviewBtn");
+  if (list.style.display === "none") {
+    list.style.display = "block";
+    btn.textContent = "Ocultar repaso de respuestas";
+  } else {
+    list.style.display = "none";
+    btn.textContent = "Ver repaso de respuestas";
+  }
+}
+</script>
+</body>
+</html>
